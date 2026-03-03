@@ -1,0 +1,11 @@
+build:
+  version: "acc3.0"
+
+account-service:
+  message: "Welcome to KOHO Bank accounts related local APIs "
+  contactDetails:
+    name: "John Doe - Developer"
+    email: "john@email.com"
+  onCallSupport:
+    - (555) 555-1234
+    - (555) 523-1345

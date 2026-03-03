@@ -1,0 +1,11 @@
+build:
+  version: "2.0"
+
+loan-service:
+  message: "Welcome to KOHO loans related QA APIs "
+  contactDetails:
+    name: "Cyrano Marita - QA Lead"
+    email: "cyrano@email.com"
+  onCallSupport:
+    - (785) 545-6565
+    - (853) 546-3467

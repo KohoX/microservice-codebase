@@ -1,0 +1,11 @@
+build:
+  version: "loan3.0"
+
+loan-service:
+  message: "Welcome to KOHO Bank loan related local APIs "
+  contactDetails:
+    name: "Amaal Grega - Developer"
+    email: "amaal@email.com"
+  onCallSupport:
+    - (452) 456-2176
+    - (546) 764-8934

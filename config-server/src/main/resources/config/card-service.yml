@@ -1,0 +1,11 @@
+build:
+  version: "card3.0"
+
+card-service:
+  message: "Welcome to KOHO Bank cards related local APIs "
+  contactDetails:
+    name: "Dragos Lech - Developer"
+    email: "dragos@email.com"
+  onCallSupport:
+    - (412) 419-3491
+    - (915) 382-1932

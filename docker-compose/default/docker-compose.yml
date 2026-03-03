@@ -1,0 +1,165 @@
+services:
+  mysql:
+    image: mysql:8.0.45-debian
+    container_name: mysql-1
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: kohobank
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - kohonet
+
+#  rabbit:
+#    image: rabbitmq:4-management
+#    hostname: rabbitmq
+#    ports:
+#      - "5672:5672"
+#      - "15672:15672"
+#    healthcheck:
+#      test: rabbitmq-diagnostics check_port_connectivity
+#      interval: 10s
+#      timeout: 5s
+#      retries: 10
+#      start_period: 5s
+#    extends:
+#      file: common-config.yml
+#      service: network-deploy-service
+
+  config-server:
+    image: kohodocker/config-server:v5
+    container_name: config
+    ports:
+      - "8071:8071"
+#    depends_on:
+#      rabbit:
+#        condition: service_healthy
+    healthcheck:
+      test: "curl --fail --silent localhost:8071/actuator/health/readiness | grep UP || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    extends:
+      file: common-config.yml
+      service: microservice-base-config
+
+  service-registry:
+    image: kohodocker/bank-service-registry:v5
+    container_name: registry
+    ports:
+      - "8070:8070"
+    depends_on:
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: "curl --fail --silent localhost:8070/actuator/health/readiness | grep UP || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    extends:
+      file: common-config.yml
+      service: microservice-configserver-config
+    environment:
+      SPRING_APPLICATION_NAME: service-registry
+
+  account-service:
+    image: kohodocker/account-service:v5
+    container_name: account
+    ports:
+      - "8080:8080"
+    depends_on:
+      config-server:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      service-registry:
+        condition: service_healthy
+    environment:
+      SPRING_APPLICATION_NAME: account-service
+    extends:
+      file: common-config.yml
+      service: microservice-registry-config
+
+  loan-service:
+    image: kohodocker/loan-service:v5
+    container_name: loan
+    ports:
+      - "8090:8081"
+    depends_on:
+      config-server:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      service-registry:
+        condition: service_healthy
+    environment:
+      SPRING_APPLICATION_NAME: loan-service
+    extends:
+      file: common-config.yml
+      service: microservice-registry-config
+
+  card-service:
+    image: kohodocker/card-service:v5
+    container_name: card
+    ports:
+      - "9000:8082"
+    depends_on:
+      config-server:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      service-registry:
+        condition: service_healthy
+    environment:
+      SPRING_APPLICATION_NAME: card-service
+    extends:
+      file: common-config.yml
+      service: microservice-registry-config
+
+#  card-service-ms:
+#    image: kohodocker/card-service:v4
+#    container_name: card-ms
+#    ports:
+#      - "9010:8082"
+#    depends_on:
+#      config-server:
+#        condition: service_healthy
+#      mysql:
+#        condition: service_healthy
+#      service-registry:
+#        condition: service_healthy
+#    environment:
+#      SPRING_APPLICATION_NAME: card-service
+#    extends:
+#      file: common-config.yml
+#      service: microservice-registry-config
+
+  api-gateway:
+    image: kohodocker/api-gateway:v5
+    container_name: gateway
+    ports:
+      - "8072:8072"
+    depends_on:
+      config-server:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      service-registry:
+        condition: service_healthy
+    environment:
+      SPRING_APPLICATION_NAME: api-gateway
+    extends:
+      file: common-config.yml
+      service: microservice-registry-config
+
+networks:
+  kohonet:
+    driver: bridge
